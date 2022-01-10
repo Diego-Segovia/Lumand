@@ -1,20 +1,18 @@
-import requests
+import os
 import cv2
 import mediapipe as mp
+from dotenv import load_dotenv
+from light_ctrl import LightController
+
+load_dotenv()
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
-token = "ce307b957f9d5b7a0a2c384e2bca457f01d13f29a3ae9f2ba49006fa1ff0eb18"
+TOKEN = os.getenv('TOKEN')
 
-headers = {
-    "Authorization": "Bearer %s" % token,
-}
-
-payload = {
-    "power": "off",
-}
+light = LightController(TOKEN)
 
 # For webcam input:
 cap = cv2.VideoCapture(0)

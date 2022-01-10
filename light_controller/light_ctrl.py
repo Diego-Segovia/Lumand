@@ -1,10 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
 
-
-token = "ce307b957f9d5b7a0a2c384e2bca457f01d13f29a3ae9f2ba49006fa1ff0eb18"
-
-
 class LightController():
     def __init__(self, token):
         self.headers = {"Authorization": "Bearer %s" % token,}
@@ -17,7 +13,7 @@ class LightController():
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
 
-        return response
+        return response.json().get('results')[0]
     
     def turn_on(self):
         if self.payload.get('power', False):
@@ -26,7 +22,7 @@ class LightController():
         else:
             self.payload['power'] = 'on'
 
-        self.do_action()
+        return self.do_action()
         
 
     def turn_off(self):
@@ -36,7 +32,7 @@ class LightController():
         else:
             self.payload['power'] = 'off'
 
-        self.do_action()
+        return self.do_action()
 
     def set_brightness(self, val=1.0):
         if type(val) is not float:
@@ -47,7 +43,4 @@ class LightController():
 
         self.payload['brightness'] = val
 
-        self.do_action()
-
-my_light = LightController(token)
-print(my_light.set_brightness(0.5))
+        return self.do_action()
