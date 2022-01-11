@@ -66,9 +66,9 @@ def is_three_finger_pinch(results):
 
 def is_two_finger(results):
     # Minimum distance between index and middle finger
-    MIN_DIST_FINGERS_UP = 0.05
+    MIN_DIST_FINGERS_UP = 0.1
     # Minimum distance between ring and pink finger and wrist
-    MIN_DIST_FINGERS_DOWN = 0.2
+    MIN_DIST_FINGERS_DOWN = 0.3
 
     middle_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x, 
                             results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y])
