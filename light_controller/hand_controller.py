@@ -39,6 +39,8 @@ def is_fist(results):
 
     # Check if all fingers are the minimum distance from wrist
     if dist_middle < MIN_DIST and dist_ring < MIN_DIST and dist_pinky < MIN_DIST:
+        cv2.putText(image, 'Light Off', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 0, 0), 2, cv2.LINE_AA)
         return True
 
     return False
@@ -60,14 +62,16 @@ def is_three_finger_pinch(results):
     dist_ring = np.linalg.norm(ring_finger-thumb)
 
     if dist_middle < MIN_DIST and dist_ring < MIN_DIST:
+        cv2.putText(image, 'Light On', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 0, 0), 2, cv2.LINE_AA)
         return True
 
     return False
 
 def is_two_finger(results):
     # Minimum distance between index and middle finger
-    MIN_DIST_FINGERS_UP = 0.1
-    MIN_DIST_FINGERS_DOWN = 0.17
+    MIN_DIST_FINGERS_UP = 0.05
+    MIN_DIST_FINGERS_DOWN = 0.2
 
     middle_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x, 
                             results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y])
@@ -131,9 +135,12 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
                 # Get index finger x coordinate minus 1 to account for image flip
                 index_finger_x = round(1 - results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 1)
                 light.set_brightness(index_finger_x, go_fast=True)
+                cv2.putText(image, 'Brightness: ' + str(int(index_finger_x * 100)) + '%', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 195, 0), 2, cv2.LINE_AA)
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        cv2.imshow('Lumand', cv2.flip(image, 1))
+        image = cv2.flip(image, 1)
+        cv2.imshow('Lumand', image)
 
         #press ESC key to exit
         if cv2.waitKey(5) & 0xFF == 27:
