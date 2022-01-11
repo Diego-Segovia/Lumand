@@ -39,8 +39,6 @@ def is_fist(results):
 
     # Check if all fingers are the minimum distance from wrist
     if dist_middle < MIN_DIST and dist_ring < MIN_DIST and dist_pinky < MIN_DIST:
-        cv2.putText(image, 'Light Off', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
-                   1, (255, 0, 0), 2, cv2.LINE_AA)
         return True
 
     return False
@@ -62,8 +60,6 @@ def is_three_finger_pinch(results):
     dist_ring = np.linalg.norm(ring_finger-thumb)
 
     if dist_middle < MIN_DIST and dist_ring < MIN_DIST:
-        cv2.putText(image, 'Light On', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
-                   1, (255, 0, 0), 2, cv2.LINE_AA)
         return True
 
     return False
@@ -71,6 +67,7 @@ def is_three_finger_pinch(results):
 def is_two_finger(results):
     # Minimum distance between index and middle finger
     MIN_DIST_FINGERS_UP = 0.05
+    # Minimum distance between ring and pink finger and wrist
     MIN_DIST_FINGERS_DOWN = 0.2
 
     middle_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x, 
@@ -113,6 +110,14 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
         results = hands.process(image)
         image.flags.writeable = True
 
+        # Index finger x coordinate used for brightness change
+        index_finger_x = None
+
+        # Flags for light state changes
+        was_turned_off = False
+        was_turned_on = False
+        had_brightness_changed = False
+
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 # Draw finger and joint marks on image
@@ -126,20 +131,35 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
             # Turn light off if fist is detected
             if is_fist(results):
                 light.turn_off(go_fast=True)
+                was_turned_off = True
 
             if is_three_finger_pinch(results):
                 light.turn_on(go_fast=True)
+                was_turned_on = True
 
             # Enter brightness mode if index and middle finger raised is detected
             if is_two_finger(results):
                 # Get index finger x coordinate minus 1 to account for image flip
                 index_finger_x = round(1 - results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 1)
                 light.set_brightness(index_finger_x, go_fast=True)
-                cv2.putText(image, 'Brightness: ' + str(int(index_finger_x * 100)) + '%', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
-                   1, (255, 195, 0), 2, cv2.LINE_AA)
+                had_brightness_changed = True
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.flip(image, 1)
+
+        # Add text to image based on light state changes
+        if had_brightness_changed:
+            cv2.putText(image, 'Brightness: ' + str(int(index_finger_x * 100)) + '%', (50, 50), cv2.FONT_HERSHEY_DUPLEX, 
+                    1, (255, 195, 0), 2, cv2.LINE_AA)
+        
+        if was_turned_on:
+            cv2.putText(image, 'Light On', (50, 50), cv2.FONT_HERSHEY_DUPLEX, 
+                   1, (247, 255, 71), 2, cv2.LINE_AA)
+
+        if was_turned_off:
+            cv2.putText(image, 'Light Off', (50, 50), cv2.FONT_HERSHEY_DUPLEX, 
+                   1, (0, 0, 0), 2, cv2.LINE_AA)
+
         cv2.imshow('Lumand', image)
 
         #press ESC key to exit
