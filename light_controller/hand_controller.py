@@ -64,8 +64,6 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
         image.flags.writeable = True
 
         if results.multi_hand_landmarks:
-            #print(results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.WRIST].y)
-            
             for hand_landmarks in results.multi_hand_landmarks:
                 # Draw finger and joint marks on image
                 mp_drawing.draw_landmarks(
@@ -75,8 +73,13 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style())
 
+            # Turn light off if fist is detected
             if is_fist(results):
                 light.turn_off()
+
+            # Get index finger x coordinate minus 1 to account for image flip
+            index_finger_x = round(1 - results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 1)
+            light.set_brightness(index_finger_x, go_fast=True)
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         cv2.imshow('Lumand', cv2.flip(image, 1))
