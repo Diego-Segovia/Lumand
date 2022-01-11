@@ -25,6 +25,10 @@ class LightController():
         if go_fast:
             self.fast_mode()
 
+        if self.payload.get('power', False):
+            if self.payload['power'] == 'on':
+                return -1
+
         self.payload['power'] = 'on'
 
         return self.do_action()
@@ -33,6 +37,10 @@ class LightController():
     def turn_off(self, go_fast=False):
         if go_fast:
             self.fast_mode()
+        
+        if self.payload.get('power', False):
+            if self.payload['power'] == 'off':
+                return -1
 
         self.payload['power'] = 'off'
 
