@@ -1,8 +1,5 @@
-<div class="header">
-<img src="lumand_logo.png"/>
+<img src="lumand_logo.png" width="50px"/>
 <h1>Lumand</h1>
-</div>
-<br>
 Lumand allows you to control your LIFX lights through the use of hand gestures and motions.
 
 Here's how:
@@ -14,16 +11,3 @@ Here's how:
 Demo:
 
 <img src="hand_control_demo.gif" width="400"/>
-
-<style>
-    .header img {
-  float: left;
-  width: 50px;
-}
-
-.header h1 {
-  position: relative;
-  top: 10px;
-  left: 5px;
-}
-</style>
