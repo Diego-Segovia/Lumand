@@ -17,12 +17,9 @@ light = LightController(TOKEN)
 
 def is_fist(results):
     # Minimum distance fingers need to be from wrist
-    MIN_DIST = 0.15
+    MIN_DIST = 0.17
 
     # Finger and wrsit (x,y) coordinates
-    index_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 
-                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y])
-
     middle_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x, 
                             results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y])
 
@@ -36,13 +33,62 @@ def is_fist(results):
                     results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.WRIST].y])
 
     # Calcuating Euclidean distance between wrist and fingers
-    dist_index = np.linalg.norm(index_finger-wrist)
     dist_middle = np.linalg.norm(middle_finger-wrist)
     dist_ring = np.linalg.norm(ring_finger-wrist)
     dist_pinky = np.linalg.norm(pinky_finger-wrist)
 
     # Check if all fingers are the minimum distance from wrist
-    if dist_index < MIN_DIST and dist_middle < MIN_DIST and dist_ring < MIN_DIST and dist_pinky < MIN_DIST:
+    if dist_middle < MIN_DIST and dist_ring < MIN_DIST and dist_pinky < MIN_DIST:
+        return True
+
+    return False
+
+def is_three_finger_pinch(results):
+    # Minimum distance between thumb, ring, and middle finger
+    MIN_DIST = 0.1
+
+    middle_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y])
+
+    ring_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.RING_FINGER_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.RING_FINGER_TIP].y])
+
+    thumb = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.THUMB_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.THUMB_TIP].y])
+
+    dist_middle = np.linalg.norm(middle_finger-thumb)
+    dist_ring = np.linalg.norm(ring_finger-thumb)
+
+    if dist_middle < MIN_DIST and dist_ring < MIN_DIST:
+        return True
+
+    return False
+
+def is_two_finger(results):
+    # Minimum distance between index and middle finger
+    MIN_DIST_FINGERS_UP = 0.1
+    MIN_DIST_FINGERS_DOWN = 0.17
+
+    middle_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y])
+
+    index_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y])
+
+    ring_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.RING_FINGER_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.RING_FINGER_TIP].y])
+
+    pinky_finger = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.PINKY_TIP].x, 
+                            results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.PINKY_TIP].y])
+
+    wrist = np.array([results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.WRIST].x, 
+                    results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.WRIST].y])
+
+    dist_middle_index = np.linalg.norm(middle_finger-index_finger)
+    dist_pinky_wrist = np.linalg.norm(pinky_finger-wrist)
+    dist_ring_wrist = np.linalg.norm(ring_finger-wrist)
+
+    if dist_middle_index < MIN_DIST_FINGERS_UP and dist_pinky_wrist < MIN_DIST_FINGERS_DOWN and dist_ring_wrist < MIN_DIST_FINGERS_DOWN:
         return True
 
     return False
@@ -75,11 +121,16 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
 
             # Turn light off if fist is detected
             if is_fist(results):
-                light.turn_off()
+                light.turn_off(go_fast=True)
 
-            # Get index finger x coordinate minus 1 to account for image flip
-            index_finger_x = round(1 - results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 1)
-            light.set_brightness(index_finger_x, go_fast=True)
+            if is_three_finger_pinch(results):
+                light.turn_on(go_fast=True)
+
+            # Enter brightness mode if index and middle finger raised is detected
+            if is_two_finger(results):
+                # Get index finger x coordinate minus 1 to account for image flip
+                index_finger_x = round(1 - results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x, 1)
+                light.set_brightness(index_finger_x, go_fast=True)
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         cv2.imshow('Lumand', cv2.flip(image, 1))
