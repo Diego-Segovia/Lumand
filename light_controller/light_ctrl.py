@@ -14,7 +14,6 @@ class LightController():
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
 
-        return response.json().get('results')[0]
 
     # Enable Fast Mode: Execute the query fast, without initial state checks and wait for no results.
     def fast_mode(self):
@@ -31,7 +30,7 @@ class LightController():
 
         self.payload['power'] = 'on'
 
-        return self.do_action()
+        self.do_action()
         
     # Turn light off
     def turn_off(self, go_fast=False):
@@ -44,7 +43,7 @@ class LightController():
 
         self.payload['power'] = 'off'
 
-        return self.do_action()
+        self.do_action()
 
     # Set Brightness Level between 0.0 and 1.0
     def set_brightness(self, val=1.0, go_fast=False):
@@ -59,4 +58,4 @@ class LightController():
 
         self.payload['brightness'] = val
 
-        return self.do_action()
+        self.do_action()
