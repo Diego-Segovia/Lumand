@@ -3,13 +3,13 @@ from requests.exceptions import HTTPError
 
 class LightController():
     def __init__(self, token):
-        self.headers = {"Authorization": "Bearer %s" % token,}
-        self.payload = {}
+        self._headers = {"Authorization": "Bearer %s" % token,}
+        self._payload = {}
 
     # Execute Query
     def do_action(self):
         try:
-            response = requests.put('https://api.lifx.com/v1/lights/all/state', data=self.payload, headers=self.headers)
+            requests.put('https://api.lifx.com/v1/lights/all/state', data=self._payload, headers=self._headers)
 
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
@@ -17,18 +17,18 @@ class LightController():
 
     # Enable Fast Mode: Execute the query fast, without initial state checks and wait for no results.
     def fast_mode(self):
-        self.payload['fast'] = True
+        self._payload['fast'] = True
     
     # Turn light on
     def turn_on(self, go_fast=False):
         if go_fast:
             self.fast_mode()
 
-        if self.payload.get('power', False):
-            if self.payload['power'] == 'on':
+        if self._payload.get('power', False):
+            if self._payload['power'] == 'on':
                 return -1
 
-        self.payload['power'] = 'on'
+        self._payload['power'] = 'on'
 
         self.do_action()
         
@@ -37,11 +37,11 @@ class LightController():
         if go_fast:
             self.fast_mode()
         
-        if self.payload.get('power', False):
-            if self.payload['power'] == 'off':
+        if self._payload.get('power', False):
+            if self._payload['power'] == 'off':
                 return -1
 
-        self.payload['power'] = 'off'
+        self._payload['power'] = 'off'
 
         self.do_action()
 
@@ -56,6 +56,6 @@ class LightController():
         if go_fast:
             self.fast_mode()
 
-        self.payload['brightness'] = val
+        self._payload['brightness'] = val
 
         self.do_action()
